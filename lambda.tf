@@ -88,8 +88,14 @@ resource "aws_iam_role_policy" "sans_iam_for_images" {
 POLICY
 }
 
+data "archive_file" "lambda_function_payload" {
+  type        = "zip"
+  source_dir = "../sans-server"
+  output_path = "./lambda_function_payload.zip"
+}
+
 resource "aws_lambda_function" "sans_folders_create" {
-  filename      = "../sans-server/lambda_function_payload.zip"
+  filename      = "${data.archive_file.lambda_function_payload.output_path}"
   function_name = "sans_folders_create"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.create"
@@ -97,7 +103,7 @@ resource "aws_lambda_function" "sans_folders_create" {
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${filebase64sha256("../sans-server/lambda_function_payload.zip")}"
+  source_code_hash = "${data.archive_file.lambda_function_payload.output_base64sha256}"
 
   runtime = "nodejs10.x"
 
@@ -109,7 +115,7 @@ resource "aws_lambda_function" "sans_folders_create" {
 }
 
 resource "aws_lambda_function" "sans_folders_get" {
-  filename      = "../sans-server/lambda_function_payload.zip"
+  filename      = "${data.archive_file.lambda_function_payload.output_path}"
   function_name = "sans_folders_get"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.get"
@@ -117,13 +123,13 @@ resource "aws_lambda_function" "sans_folders_get" {
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${filebase64sha256("../sans-server/lambda_function_payload.zip")}"
+  source_code_hash = "${data.archive_file.lambda_function_payload.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
 resource "aws_lambda_function" "sans_folders_getall" {
-  filename      = "../sans-server/lambda_function_payload.zip"
+  filename      = "${data.archive_file.lambda_function_payload.output_path}"
   function_name = "sans_folders_getall"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.getAll"
@@ -131,13 +137,13 @@ resource "aws_lambda_function" "sans_folders_getall" {
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${filebase64sha256("../sans-server/lambda_function_payload.zip")}"
+  source_code_hash = "${data.archive_file.lambda_function_payload.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
 resource "aws_lambda_function" "sans_folders_rename" {
-  filename      = "../sans-server/lambda_function_payload.zip"
+  filename      = "${data.archive_file.lambda_function_payload.output_path}"
   function_name = "sans_folders_rename"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.rename"
@@ -145,13 +151,13 @@ resource "aws_lambda_function" "sans_folders_rename" {
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${filebase64sha256("../sans-server/lambda_function_payload.zip")}"
+  source_code_hash = "${data.archive_file.lambda_function_payload.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
 resource "aws_lambda_function" "sans_folders_delete" {
-  filename      = "../sans-server/lambda_function_payload.zip"
+  filename      = "${data.archive_file.lambda_function_payload.output_path}"
   function_name = "sans_folders_delete"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.delete"
@@ -159,13 +165,13 @@ resource "aws_lambda_function" "sans_folders_delete" {
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${filebase64sha256("../sans-server/lambda_function_payload.zip")}"
+  source_code_hash = "${data.archive_file.lambda_function_payload.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
 resource "aws_lambda_function" "sans_images_getall" {
-  filename      = "../sans-server/lambda_function_payload.zip"
+  filename      = "${data.archive_file.lambda_function_payload.output_path}"
   function_name = "sans_images_getall"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.getAll"
@@ -173,13 +179,13 @@ resource "aws_lambda_function" "sans_images_getall" {
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${filebase64sha256("../sans-server/lambda_function_payload.zip")}"
+  source_code_hash = "${data.archive_file.lambda_function_payload.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
 resource "aws_lambda_function" "sans_images_create" {
-  filename      = "../sans-server/lambda_function_payload.zip"
+  filename      = "${data.archive_file.lambda_function_payload.output_path}"
   function_name = "sans_images_create"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.create"
@@ -187,13 +193,13 @@ resource "aws_lambda_function" "sans_images_create" {
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${filebase64sha256("../sans-server/lambda_function_payload.zip")}"
+  source_code_hash = "${data.archive_file.lambda_function_payload.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
 resource "aws_lambda_function" "sans_images_delete" {
-  filename      = "../sans-server/lambda_function_payload.zip"
+  filename      = "${data.archive_file.lambda_function_payload.output_path}"
   function_name = "sans_images_delete"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.delete"
@@ -201,13 +207,13 @@ resource "aws_lambda_function" "sans_images_delete" {
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${filebase64sha256("../sans-server/lambda_function_payload.zip")}"
+  source_code_hash = "${data.archive_file.lambda_function_payload.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
 resource "aws_lambda_function" "sans_cookies_get" {
-  filename      = "../sans-server/lambda_function_payload.zip"
+  filename      = "${data.archive_file.lambda_function_payload.output_path}"
   function_name = "sans_cookies_get"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/cookies.get"
@@ -215,7 +221,7 @@ resource "aws_lambda_function" "sans_cookies_get" {
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${filebase64sha256("../sans-server/lambda_function_payload.zip")}"
+  source_code_hash = "${data.archive_file.lambda_function_payload.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
