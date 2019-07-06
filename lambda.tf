@@ -91,13 +91,13 @@ POLICY
 data "archive_file" "sans-server" {
   type        = "zip"
   source_dir = "../sans-server"
-  output_path = "./sans-server1.zip"
+  output_path = "./sans-server.zip"
 }
 
 resource "aws_s3_bucket_object" "object" {
   bucket = "pipeline.sans-website.com"
-  key    = "sans-server1.zip"
-  source = "./sans-server1.zip"
+  key    = "sans-server.zip"
+  source = "./sans-server.zip"
 
   # The filemd5() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
@@ -107,7 +107,7 @@ resource "aws_s3_bucket_object" "object" {
 
 locals {
 	s3_bucket      = "pipeline.sans-website.com"
-	s3_key         = "sans-server.zips"
+	s3_key         = "sans-server.zip"
 	lambda_payload = "s3://pipeline.sans-website.com/sans-server.zip" 
 }
 
