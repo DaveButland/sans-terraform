@@ -94,6 +94,7 @@ data "archive_file" "sans-server" {
   output_path = "./sans-server.zip"
 }
 
+/*
 resource "aws_s3_bucket_object" "object" {
   bucket = "pipeline.sans-website.com"
   key    = "sans-server.zip"
@@ -104,16 +105,10 @@ resource "aws_s3_bucket_object" "object" {
   # etag = "${md5(file("path/to/file"))}"
 //  etag = "${filemd5("./sans-server1.zip")}"
 }
-
-locals {
-	s3_bucket      = "pipeline.sans-website.com"
-	s3_key         = "sans-server.zip"
-	lambda_payload = "s3://pipeline.sans-website.com/sans-server.zip" 
-}
+*/
 
 resource "aws_lambda_function" "sans_folders_create" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_folders_create"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.create"
@@ -134,8 +129,7 @@ resource "aws_lambda_function" "sans_folders_create" {
 }
 
 resource "aws_lambda_function" "sans_folders_get" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_folders_get"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.get"
@@ -149,8 +143,7 @@ resource "aws_lambda_function" "sans_folders_get" {
 }
 
 resource "aws_lambda_function" "sans_folders_getall" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_folders_getall"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.getAll"
@@ -164,8 +157,7 @@ resource "aws_lambda_function" "sans_folders_getall" {
 }
 
 resource "aws_lambda_function" "sans_folders_rename" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_folders_rename"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.rename"
@@ -179,8 +171,7 @@ resource "aws_lambda_function" "sans_folders_rename" {
 }
 
 resource "aws_lambda_function" "sans_folders_delete" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_folders_delete"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.delete"
@@ -194,8 +185,7 @@ resource "aws_lambda_function" "sans_folders_delete" {
 }
 
 resource "aws_lambda_function" "sans_images_getall" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_images_getall"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.getAll"
@@ -209,8 +199,7 @@ resource "aws_lambda_function" "sans_images_getall" {
 }
 
 resource "aws_lambda_function" "sans_images_create" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_images_create"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.create"
@@ -224,8 +213,7 @@ resource "aws_lambda_function" "sans_images_create" {
 }
 
 resource "aws_lambda_function" "sans_images_get" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_images_get"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.get"
@@ -239,8 +227,7 @@ resource "aws_lambda_function" "sans_images_get" {
 }
 
 resource "aws_lambda_function" "sans_images_update" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_images_update"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.update"
@@ -254,8 +241,7 @@ resource "aws_lambda_function" "sans_images_update" {
 }
 
 resource "aws_lambda_function" "sans_images_delete" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_images_delete"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.delete"
@@ -269,8 +255,7 @@ resource "aws_lambda_function" "sans_images_delete" {
 }
 
 resource "aws_lambda_function" "sans_cookies_get" {
-  s3_bucket     = local.s3_bucket
-	s3_key        = local.s3_key
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_cookies_get"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/cookies.get"
