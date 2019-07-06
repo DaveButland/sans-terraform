@@ -64,7 +64,7 @@ resource "aws_cloudfront_distribution" "sans_website" {
     min_ttl                = 0
     default_ttl            = 86400
     max_ttl                = 31536000
-		compress 							 = false
+		compress 							 = true
   }
 
 	ordered_cache_behavior {
@@ -72,7 +72,7 @@ resource "aws_cloudfront_distribution" "sans_website" {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${local.s3_private_origin_id}"
-		trusted_signers = [ "self" ]
+//		trusted_signers = [ "self" ] - temp for testing
 
     forwarded_values {
       query_string = false
@@ -86,7 +86,7 @@ resource "aws_cloudfront_distribution" "sans_website" {
     min_ttl                = 0
     default_ttl            = 86400
     max_ttl                = 31536000
-    compress               = false
+    compress               = true
   }
 
   custom_error_response {

@@ -10,3 +10,11 @@ provider "aws" {
   region     = var.region
 }
 
+terraform {
+  backend "s3" {
+    bucket = "pipeline.sans-website.com"
+    key    = "terraform.tfstate"
+    region = "eu-west-2"
+  }
+}
+
