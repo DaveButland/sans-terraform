@@ -17,22 +17,6 @@ resource "aws_iam_role" "sans_iam_for_lambda" {
 }
 EOF
 }
-/*
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-*/
 
 resource "aws_iam_role_policy_attachment" "sans_iam_for_logs" {
   role       = "${aws_iam_role.sans_iam_for_lambda.name}"
@@ -94,7 +78,35 @@ data "archive_file" "sans-server" {
   output_path = "./sans-server.zip"
 }
 
-/*
+data "external" "worker_zip" {
+  program = ["./zip.sh"]
+}
+
+/* This doesn't work because of symbolic links 
+data "archive_file" "sans-resizer" {
+  type        = "zip"
+  source_dir = "../sans-resizer"
+  output_path = "./sans-resizer.zip"
+}
+*/
+
+/* replace with external zip
+data "external" "main" {
+  program = ["sh", "${path.module}/archive.sh"]
+  query = {
+    input_path = "${path.module}/my_function_code/"
+    output_path = "${path.module}/my_function_code.zip"
+  }
+}
+
+resource "aws_lambda_function" "main" {
+  filename = "${data.external.main.result.output_path}"
+  source_code_hash = "${data.external.main.result.output_hash}"
+  # ...
+}
+*/
+
+/* this doesn't work for me, must be doing something wrong with the md5 hash
 resource "aws_s3_bucket_object" "object" {
   bucket = "pipeline.sans-website.com"
   key    = "sans-server.zip"
@@ -184,6 +196,42 @@ resource "aws_lambda_function" "sans_folders_delete" {
   runtime = "nodejs10.x"
 }
 
+resource "aws_lambda_function" "sans_folders_resize_post" {
+	filename      = "./sans-resizer.zip"
+  function_name = "sans_folders_resize_post"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "index.resizeFolder"
+
+  # The filebase64sha256() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
+  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
+	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
+
+  runtime = "nodejs8.10"
+	memory_size = 1216
+	timeout = 300
+
+	depends_on = [ "data.external.worker_zip" ]
+}
+
+resource "aws_lambda_function" "sans_folders_resize_delete" {
+	filename      = "./sans-resizer.zip"
+  function_name = "sans_folders_resize_delete"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "index.resizeFolder"
+
+  # The filebase64sha256() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
+  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
+	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
+
+  runtime = "nodejs8.10"
+	memory_size = 1216
+	timeout = 10
+
+	depends_on = [ "data.external.worker_zip" ]
+}
+
 resource "aws_lambda_function" "sans_images_getall" {
 	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_images_getall"
@@ -226,18 +274,23 @@ resource "aws_lambda_function" "sans_images_get" {
   runtime = "nodejs10.x"
 }
 
+// Hard coded zip file because of problems with terraform zip and symbolic links
 resource "aws_lambda_function" "sans_images_update" {
-	filename      = "${data.archive_file.sans-server.output_path}"
+	filename      = "./sans-resizer.zip"
   function_name = "sans_images_update"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
-  handler       = "src/images.update"
+  handler       = "index.resize"
 
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
 
-  runtime = "nodejs10.x"
+  runtime = "nodejs8.10"
+	memory_size = 1216
+	timeout = 10
+
+	depends_on = [ "data.external.worker_zip" ]
 }
 
 resource "aws_lambda_function" "sans_images_delete" {

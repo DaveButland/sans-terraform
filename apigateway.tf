@@ -47,6 +47,14 @@ resource "aws_api_gateway_resource" "sans_api_folders_folderid_images" {
   depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid"]
 }
 
+resource "aws_api_gateway_resource" "sans_api_folders_folderid_resize" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  parent_id   = "${aws_api_gateway_resource.sans_api_folders_folderid.id}"
+  path_part   = "resize"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid"]
+}
+
 resource "aws_api_gateway_resource" "sans_api_folders_folderid_images_imageid" {
   rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
   parent_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_images.id}"
@@ -157,6 +165,39 @@ resource "aws_api_gateway_method" "sans_api_folders_folderid_delete" {
 	authorization_scopes = ["aws.cognito.signin.user.admin"]
 
   depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid"]
+}
+
+resource "aws_api_gateway_method" "sans_api_folders_folderid_resize_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid_resize"]
+}
+
+resource "aws_api_gateway_method" "sans_api_folders_folderid_resize_post" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+  http_method   = "POST"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid_resize"]
+}
+
+resource "aws_api_gateway_method" "sans_api_folders_folderid_resize_delete" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+  http_method   = "DELETE"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid_resize"]
 }
 
 resource "aws_api_gateway_method" "sans_api_folders_folderid_images_options" {
@@ -394,6 +435,46 @@ resource "aws_api_gateway_method_response" "sans_api_folders_folderid_delete" {
     }
 
     depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_delete"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_folders_folderid_resize_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_folders_folderid_resize_options.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }		
+		response_parameters = { 
+			"method.response.header.Access-Control-Allow-Headers" = true 
+			"method.response.header.Access-Control-Allow-Methods" = true 
+			"method.response.header.Access-Control-Allow-Origin" = true 
+		}
+
+    depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_options"]
+}
+resource "aws_api_gateway_method_response" "sans_api_folders_folderid_resize_post" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_folders_folderid_resize_post.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_post"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_folders_folderid_resize_delete" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_folders_folderid_resize_delete.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_delete"]
 }
 
 resource "aws_api_gateway_method_response" "sans_api_folders_folderid_images_options" {
@@ -667,6 +748,46 @@ resource "aws_api_gateway_integration" "sans_api_folders_folderid_delete" {
   depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_delete"]
 }
 
+resource "aws_api_gateway_integration" "sans_api_folders_folderid_resize_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+  http_method   = "${aws_api_gateway_method.sans_api_folders_folderid_resize_options.http_method}"
+  type          = "MOCK"
+	request_templates = {
+    "application/json" = <<EOF
+{"statusCode": 200}
+EOF
+}
+
+  depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_options"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_folders_folderid_resize_post" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_folders_folderid_resize_post.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_folders_folderid_resize_post.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_folders_resize_post.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_post"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_folders_folderid_resize_delete" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_folders_folderid_resize_delete.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_folders_folderid_resize_delete.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_folders_resize_delete.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_delete"]
+}
+
 resource "aws_api_gateway_integration" "sans_api_folders_folderid_images_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_images.id}"
@@ -928,6 +1049,43 @@ resource "aws_api_gateway_integration_response" "sans_api_folders_folderid_delet
     depends_on = ["aws_api_gateway_integration.sans_api_folders_folderid_delete"]
 }
 
+resource "aws_api_gateway_integration_response" "sans_api_folders_folderid_resize_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_folders_folderid_resize_options.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_folders_folderid_resize_options.status_code}"
+    response_parameters = {
+			"method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+			"method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,DELETE'",
+			"method.response.header.Access-Control-Allow-Origin" = "'*'"
+    }
+    depends_on = ["aws_api_gateway_integration.sans_api_folders_folderid_resize_options"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_folders_folderid_resize_post" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_folders_folderid_resize_post.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_folders_folderid_resize_post.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_folders_folderid_resize_post"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_folders_folderid_resize_delete" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_folders_folderid_resize_delete.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_folders_folderid_resize_delete.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_folders_folderid_resize_delete"]
+}
+
 resource "aws_api_gateway_integration_response" "sans_api_folders_folderid_images_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_images.id}"
@@ -1102,6 +1260,9 @@ resource "aws_api_gateway_deployment" "sans_api" {
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_delete"
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_images_options"
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_images_get"
+	             , "aws_api_gateway_integration.sans_api_folders_folderid_resize_options"
+	             , "aws_api_gateway_integration.sans_api_folders_folderid_resize_post"
+	             , "aws_api_gateway_integration.sans_api_folders_folderid_resize_delete"
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_images_imageid_options"
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_images_imageid_delete"
 	             , "aws_api_gateway_integration.sans_api_images_options"
@@ -1161,6 +1322,20 @@ resource "aws_lambda_permission" "sans_api_sans_folders_delete" {
   function_name = "${aws_lambda_function.sans_folders_delete.arn}"
   principal     = "apigateway.amazonaws.com"
   source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/DELETE/folders/{folderid}"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_folders_resize_post" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_folders_resize_post.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/POST/folders/{folderid}/resize"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_folders_resize_delete" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_folders_resize_delete.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/DELETE/folders/{folderid}/resize"
 }
 
 resource "aws_lambda_permission" "sans_api_sans_images_getall" {
