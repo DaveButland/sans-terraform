@@ -320,3 +320,39 @@ resource "aws_lambda_function" "sans_cookies_get" {
 
   runtime = "nodejs10.x"
 }
+
+resource "aws_lambda_function" "sans_images_resize" {
+	filename      = "./sans-resizer.zip"
+  function_name = "sans_images_resize"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "index.resizeImage"
+
+  # The filebase64sha256() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
+  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
+	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
+
+  runtime = "nodejs8.10"
+	memory_size = 1216
+	timeout = 10
+
+	depends_on = [ "data.external.worker_zip" ]
+}
+
+resource "aws_lambda_permission" "sans_iamges_resize" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_images_resize.arn}"
+  principal     = "s3.amazonaws.com"
+  source_arn    = "${aws_s3_bucket.private.arn}"
+}
+
+resource "aws_s3_bucket_notification" "sans_images_resize" {
+  bucket = "${aws_s3_bucket.private.id}"
+
+  lambda_function {
+    lambda_function_arn = "${aws_lambda_function.sans_images_resize.arn}"
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "private/"
+  }
+}
