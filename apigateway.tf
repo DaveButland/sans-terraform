@@ -23,6 +23,7 @@ resource "aws_api_gateway_authorizer" "sans_api" {
 }
 
 //API RESOURCES
+//folders
 resource "aws_api_gateway_resource" "sans_api_folders" {
   rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
   parent_id   = "${aws_api_gateway_rest_api.sans_api.root_resource_id}"
@@ -63,6 +64,24 @@ resource "aws_api_gateway_resource" "sans_api_folders_folderid_images_imageid" {
   depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid_images"]
 }
 
+//albums
+resource "aws_api_gateway_resource" "sans_api_albums" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  parent_id   = "${aws_api_gateway_rest_api.sans_api.root_resource_id}"
+  path_part   = "albums"
+
+  depends_on = ["aws_api_gateway_rest_api.sans_api"]
+}
+
+resource "aws_api_gateway_resource" "sans_api_albums_albumid" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  parent_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+  path_part   = "{albumid}"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums"]
+}
+
+//images
 resource "aws_api_gateway_resource" "sans_api_images" {
   rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
   parent_id   = "${aws_api_gateway_rest_api.sans_api.root_resource_id}"
@@ -87,7 +106,25 @@ resource "aws_api_gateway_resource" "sans_api_cookies" {
   depends_on = ["aws_api_gateway_rest_api.sans_api"]
 }
 
+//pages
+resource "aws_api_gateway_resource" "sans_api_pages" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  parent_id   = "${aws_api_gateway_rest_api.sans_api.root_resource_id}"
+  path_part   = "pages"
+
+  depends_on = ["aws_api_gateway_rest_api.sans_api"]
+}
+
+resource "aws_api_gateway_resource" "sans_api_pages_pageid" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  parent_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+  path_part   = "{pageid}"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_pages"]
+}
+
 //API METHODS
+//folders
 resource "aws_api_gateway_method" "sans_api_folders_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_folders.id}"
@@ -188,18 +225,6 @@ resource "aws_api_gateway_method" "sans_api_folders_folderid_resize_post" {
   depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid_resize"]
 }
 
-resource "aws_api_gateway_method" "sans_api_folders_folderid_resize_delete" {
-  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
-  resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
-  http_method   = "DELETE"
-
-  authorization = "COGNITO_USER_POOLS"
-  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
-	authorization_scopes = ["aws.cognito.signin.user.admin"]
-
-  depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid_resize"]
-}
-
 resource "aws_api_gateway_method" "sans_api_folders_folderid_images_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_images.id}"
@@ -242,6 +267,87 @@ resource "aws_api_gateway_method" "sans_api_folders_folderid_images_imageid_dele
   depends_on = ["aws_api_gateway_resource.sans_api_folders_folderid_images_imageid"]
 }
 
+//albums
+resource "aws_api_gateway_method" "sans_api_albums_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums"]
+}
+
+resource "aws_api_gateway_method" "sans_api_albums_get" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+  http_method   = "GET"
+	
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums"]
+}
+
+resource "aws_api_gateway_method" "sans_api_albums_post" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+  http_method   = "POST"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums"]
+}
+
+resource "aws_api_gateway_method" "sans_api_albums_albumid_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+  http_method   = "OPTIONS"
+
+  authorization = "NONE"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums_albumid"]
+}
+
+resource "aws_api_gateway_method" "sans_api_albums_albumid_get" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+  http_method   = "GET"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums_albumid"]
+}
+
+resource "aws_api_gateway_method" "sans_api_albums_albumid_put" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+  http_method   = "PUT"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums_albumid"]
+}
+
+resource "aws_api_gateway_method" "sans_api_albums_albumid_delete" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+  http_method   = "DELETE"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums_albumid"]
+}
+
+//images
 resource "aws_api_gateway_method" "sans_api_images_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_images.id}"
@@ -321,6 +427,86 @@ resource "aws_api_gateway_method" "sans_api_images_imageid_delete" {
   depends_on = ["aws_api_gateway_resource.sans_api_images_imageid"]
 }
 
+//pages
+resource "aws_api_gateway_method" "sans_api_pages_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_pages"]
+}
+
+resource "aws_api_gateway_method" "sans_api_pages_get" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+  http_method   = "GET"
+	
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_pages"]
+}
+
+resource "aws_api_gateway_method" "sans_api_pages_post" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+  http_method   = "POST"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_pages"]
+}
+
+resource "aws_api_gateway_method" "sans_api_pages_pageid_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+  http_method   = "OPTIONS"
+
+  authorization = "NONE"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_pages_pageid"]
+}
+
+resource "aws_api_gateway_method" "sans_api_pages_pageid_get" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+  http_method   = "GET"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_pages_pageid"]
+}
+
+resource "aws_api_gateway_method" "sans_api_pages_pageid_put" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+  http_method   = "PUT"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_pages_pageid"]
+}
+
+resource "aws_api_gateway_method" "sans_api_pages_pageid_delete" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+  http_method   = "DELETE"
+
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_pages_pageid"]
+}
+
 resource "aws_api_gateway_method" "sans_api_cookies_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_cookies.id}"
@@ -343,6 +529,7 @@ resource "aws_api_gateway_method" "sans_api_cookies_get" {
 }
 
 //METHOD RESPONSE
+//folders
 resource "aws_api_gateway_method_response" "sans_api_folders_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_folders.id}"
@@ -465,18 +652,6 @@ resource "aws_api_gateway_method_response" "sans_api_folders_folderid_resize_pos
     depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_post"]
 }
 
-resource "aws_api_gateway_method_response" "sans_api_folders_folderid_resize_delete" {
-    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
-    resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
-    http_method   = "${aws_api_gateway_method.sans_api_folders_folderid_resize_delete.http_method}"
-    status_code   = 200
-		response_models = {
-			"application/json" = "Empty"
-    }
-
-    depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_delete"]
-}
-
 resource "aws_api_gateway_method_response" "sans_api_folders_folderid_images_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_images.id}"
@@ -533,6 +708,102 @@ resource "aws_api_gateway_method_response" "sans_api_folders_folderid_images_ima
     depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_images_imageid_delete"]
 }
 
+//albums
+resource "aws_api_gateway_method_response" "sans_api_albums_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_options.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }		
+		response_parameters = { 
+			"method.response.header.Access-Control-Allow-Headers" = true 
+			"method.response.header.Access-Control-Allow-Methods" = true 
+			"method.response.header.Access-Control-Allow-Origin" = true 
+		}
+
+    depends_on = ["aws_api_gateway_method.sans_api_albums_options"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_albums_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_get.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_albums_get"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_albums_post" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_post.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_albums_post"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_albums_albumid_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_options.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }		
+		response_parameters = { 
+			"method.response.header.Access-Control-Allow-Headers" = true 
+			"method.response.header.Access-Control-Allow-Methods" = true 
+			"method.response.header.Access-Control-Allow-Origin" = true 
+		}
+
+    depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_options"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_albums_albumid_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_get.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_get"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_albums_albumid_put" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_put.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_put"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_albums_albumid_delete" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_delete.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_delete"]
+}
+
+//images
 resource "aws_api_gateway_method_response" "sans_api_images_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_images.id}"
@@ -626,6 +897,102 @@ resource "aws_api_gateway_method_response" "sans_api_images_imageid_delete" {
     depends_on = ["aws_api_gateway_method.sans_api_images_imageid_delete"]
 }
 
+//pages
+resource "aws_api_gateway_method_response" "sans_api_pages_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_options.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }		
+		response_parameters = { 
+			"method.response.header.Access-Control-Allow-Headers" = true 
+			"method.response.header.Access-Control-Allow-Methods" = true 
+			"method.response.header.Access-Control-Allow-Origin" = true 
+		}
+
+    depends_on = ["aws_api_gateway_method.sans_api_pages_options"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_pages_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_get.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_pages_get"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_pages_post" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_post.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_pages_post"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_pages_pageid_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_pageid_options.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }		
+		response_parameters = { 
+			"method.response.header.Access-Control-Allow-Headers" = true 
+			"method.response.header.Access-Control-Allow-Methods" = true 
+			"method.response.header.Access-Control-Allow-Origin" = true 
+		}
+
+    depends_on = ["aws_api_gateway_method.sans_api_pages_pageid_options"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_pages_pageid_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_pageid_get.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_pages_pageid_get"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_pages_pageid_put" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_pageid_put.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_pages_pageid_put"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_pages_pageid_delete" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_pageid_delete.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_pages_pageid_delete"]
+}
+
+//cookies
 resource "aws_api_gateway_method_response" "sans_api_cookies_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_cookies.id}"
@@ -655,6 +1022,7 @@ resource "aws_api_gateway_method_response" "sans_api_cookies_get" {
 }
 
 //API INTEGRATIONS
+//folders
 resource "aws_api_gateway_integration" "sans_api_folders_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_folders.id}"
@@ -775,19 +1143,6 @@ resource "aws_api_gateway_integration" "sans_api_folders_folderid_resize_post" {
   depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_post"]
 }
 
-resource "aws_api_gateway_integration" "sans_api_folders_folderid_resize_delete" {
-  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
-  resource_id = "${aws_api_gateway_method.sans_api_folders_folderid_resize_delete.resource_id}"
-  http_method = "${aws_api_gateway_method.sans_api_folders_folderid_resize_delete.http_method}"
-
-	content_handling        = "CONVERT_TO_TEXT"
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = "${aws_lambda_function.sans_folders_resize_delete.invoke_arn}"
-
-  depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_resize_delete"]
-}
-
 resource "aws_api_gateway_integration" "sans_api_folders_folderid_images_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_images.id}"
@@ -842,6 +1197,101 @@ resource "aws_api_gateway_integration" "sans_api_folders_folderid_images_imageid
   depends_on = ["aws_api_gateway_method.sans_api_folders_folderid_images_imageid_delete"]
 }
 
+//albums
+resource "aws_api_gateway_integration" "sans_api_albums_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+  http_method   = "${aws_api_gateway_method.sans_api_albums_options.http_method}"
+  type          = "MOCK"
+	request_templates = {
+    "application/json" = <<EOF
+{"statusCode": 200}
+EOF
+}
+
+  depends_on = ["aws_api_gateway_method.sans_api_albums_options"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_albums_get" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_albums_get.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_albums_get.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+	integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_albums_getall.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_albums_get"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_albums_post" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_albums_post.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_albums_post.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_albums_create.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_albums_post"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_albums_albumid_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+  http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_options.http_method}"
+  type          = "MOCK"
+	request_templates = {
+    "application/json" = <<EOF
+{"statusCode": 200}
+EOF
+}
+
+  depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_options"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_albums_albumid_get" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_albums_albumid_get.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_albums_albumid_get.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_albums_get.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_get"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_albums_albumid_put" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_albums_albumid_put.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_albums_albumid_put.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_albums_update.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_put"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_albums_albumid_delete" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_albums_albumid_delete.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_albums_albumid_delete.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_albums_delete.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_delete"]
+}
+
+//images
 resource "aws_api_gateway_integration" "sans_api_images_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_images.id}"
@@ -935,6 +1385,101 @@ resource "aws_api_gateway_integration" "sans_api_images_imageid_delete" {
   depends_on = ["aws_api_gateway_method.sans_api_images_imageid_delete"]
 }
 
+//pages
+resource "aws_api_gateway_integration" "sans_api_pages_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+  http_method   = "${aws_api_gateway_method.sans_api_pages_options.http_method}"
+  type          = "MOCK"
+	request_templates = {
+    "application/json" = <<EOF
+{"statusCode": 200}
+EOF
+}
+
+  depends_on = ["aws_api_gateway_method.sans_api_pages_options"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_pages_get" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_pages_get.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_pages_get.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+	integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_pages_getall.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_pages_get"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_pages_post" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_pages_post.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_pages_post.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_pages_create.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_pages_post"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_pages_pageid_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+  http_method   = "${aws_api_gateway_method.sans_api_pages_pageid_options.http_method}"
+  type          = "MOCK"
+	request_templates = {
+    "application/json" = <<EOF
+{"statusCode": 200}
+EOF
+}
+
+  depends_on = ["aws_api_gateway_method.sans_api_pages_pageid_options"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_pages_pageid_get" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_pages_pageid_get.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_pages_pageid_get.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_pages_get.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_pages_pageid_get"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_pages_pageid_put" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_pages_pageid_put.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_pages_pageid_put.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_pages_update.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_pages_pageid_put"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_pages_pageid_delete" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_pages_pageid_delete.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_pages_pageid_delete.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_pages_delete.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_pages_pageid_delete"]
+}
+
+//cookies
 resource "aws_api_gateway_integration" "sans_api_cookies_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_cookies.id}"
@@ -963,6 +1508,7 @@ resource "aws_api_gateway_integration" "sans_api_cookies_get" {
 }
 
 //Integration Responses
+//folders
 resource "aws_api_gateway_integration_response" "sans_api_folders_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_folders.id}"
@@ -992,7 +1538,7 @@ resource "aws_api_gateway_integration_response" "sans_api_folders_post" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_folders.id}"
     http_method   = "${aws_api_gateway_method.sans_api_folders_post.http_method}"
-    status_code   = "${aws_api_gateway_method_response.sans_api_folders_get.status_code}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_folders_post.status_code}"
 		response_templates = { 
 			"application/json" = "null"
     }		
@@ -1074,18 +1620,6 @@ resource "aws_api_gateway_integration_response" "sans_api_folders_folderid_resiz
     depends_on = ["aws_api_gateway_integration.sans_api_folders_folderid_resize_post"]
 }
 
-resource "aws_api_gateway_integration_response" "sans_api_folders_folderid_resize_delete" {
-    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
-    resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_resize.id}"
-    http_method   = "${aws_api_gateway_method.sans_api_folders_folderid_resize_delete.http_method}"
-    status_code   = "${aws_api_gateway_method_response.sans_api_folders_folderid_resize_delete.status_code}"
-		response_templates = { 
-			"application/json" = "null"
-    }		
-
-    depends_on = ["aws_api_gateway_integration.sans_api_folders_folderid_resize_delete"]
-}
-
 resource "aws_api_gateway_integration_response" "sans_api_folders_folderid_images_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_folders_folderid_images.id}"
@@ -1136,6 +1670,94 @@ resource "aws_api_gateway_integration_response" "sans_api_folders_folderid_image
     depends_on = ["aws_api_gateway_integration.sans_api_folders_folderid_images_imageid_delete"]
 }
 
+//albums
+resource "aws_api_gateway_integration_response" "sans_api_albums_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_options.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_albums_options.status_code}"
+    response_parameters = {
+			"method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+			"method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,DELETE'",
+			"method.response.header.Access-Control-Allow-Origin" = "'*'"
+    }
+    depends_on = ["aws_api_gateway_integration.sans_api_albums_options"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_album_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_get.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_albums_get.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_albums_get"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_albums_post" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_post.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_albums_post.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_albums_post"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_albums_albumid_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_options.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_albums_albumid_options.status_code}"
+    response_parameters = {
+			"method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+			"method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,DELETE'",
+			"method.response.header.Access-Control-Allow-Origin" = "'*'"
+    }
+    depends_on = ["aws_api_gateway_integration.sans_api_albums_albumid_options"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_albums_albumid_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_get.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_albums_albumid_get.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_albums_albumid_get"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_albums_albumid_put" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_put.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_albums_albumid_put.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_albums_albumid_put"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_albums_albumid_delete" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_delete.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_albums_albumid_delete.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_albums_albumid_delete"]
+}
+
+//images
 resource "aws_api_gateway_integration_response" "sans_api_images_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_images.id}"
@@ -1235,6 +1857,94 @@ resource "aws_api_gateway_integration_response" "sans_api_cookies_options" {
     depends_on = ["aws_api_gateway_integration.sans_api_cookies_options"]
 }
 
+//pages
+resource "aws_api_gateway_integration_response" "sans_api_pages_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_options.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_pages_options.status_code}"
+    response_parameters = {
+			"method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+			"method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,DELETE'",
+			"method.response.header.Access-Control-Allow-Origin" = "'*'"
+    }
+    depends_on = ["aws_api_gateway_integration.sans_api_pages_options"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_pages_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_get.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_pages_get.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_pages_get"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_pages_post" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_post.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_pages_post.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_pages_post"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_pages_pageid_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_pageid_options.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_pages_pageid_options.status_code}"
+    response_parameters = {
+			"method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+			"method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,DELETE'",
+			"method.response.header.Access-Control-Allow-Origin" = "'*'"
+    }
+    depends_on = ["aws_api_gateway_integration.sans_api_pages_pageid_options"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_pages_pageid_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_pageid_get.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_pages_pageid_get.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_pages_pageid_get"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_pages_pageid_put" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_pageid_put.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_pages_pageid_put.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_pages_pageid_put"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_pages_pageid_delete" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_pages_pageid.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_pages_pageid_delete.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_pages_pageid_delete.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_pages_pageid_delete"]
+}
+
+//cookies
 resource "aws_api_gateway_integration_response" "sans_api_cookies_get" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_cookies.id}"
@@ -1262,9 +1972,15 @@ resource "aws_api_gateway_deployment" "sans_api" {
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_images_get"
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_resize_options"
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_resize_post"
-	             , "aws_api_gateway_integration.sans_api_folders_folderid_resize_delete"
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_images_imageid_options"
 	             , "aws_api_gateway_integration.sans_api_folders_folderid_images_imageid_delete"
+	             , "aws_api_gateway_integration.sans_api_albums_options"
+	             , "aws_api_gateway_integration.sans_api_albums_get"
+	             , "aws_api_gateway_integration.sans_api_albums_post"
+	             , "aws_api_gateway_integration.sans_api_albums_albumid_options"
+	             , "aws_api_gateway_integration.sans_api_albums_albumid_get"
+	             , "aws_api_gateway_integration.sans_api_albums_albumid_put"
+	             , "aws_api_gateway_integration.sans_api_albums_albumid_delete"
 	             , "aws_api_gateway_integration.sans_api_images_options"
 	             , "aws_api_gateway_integration.sans_api_images_get"
 	             , "aws_api_gateway_integration.sans_api_images_post"
@@ -1272,6 +1988,13 @@ resource "aws_api_gateway_deployment" "sans_api" {
 	             , "aws_api_gateway_integration.sans_api_images_imageid_get"
 	             , "aws_api_gateway_integration.sans_api_images_imageid_put"
 	             , "aws_api_gateway_integration.sans_api_images_imageid_delete"
+	             , "aws_api_gateway_integration.sans_api_pages_options"
+	             , "aws_api_gateway_integration.sans_api_pages_get"
+	             , "aws_api_gateway_integration.sans_api_pages_post"
+	             , "aws_api_gateway_integration.sans_api_pages_pageid_options"
+	             , "aws_api_gateway_integration.sans_api_pages_pageid_get"
+	             , "aws_api_gateway_integration.sans_api_pages_pageid_put"
+	             , "aws_api_gateway_integration.sans_api_pages_pageid_delete"
 	             , "aws_api_gateway_integration.sans_api_cookies_options"
 	             , "aws_api_gateway_integration.sans_api_cookies_get"
 							 ]
@@ -1289,6 +2012,8 @@ output "sans_api_url" {
   value = "${aws_api_gateway_deployment.sans_api.invoke_url}"
 }
 
+//lambda permissions
+//folders
 resource "aws_lambda_permission" "sans_api_sans_folders_getall" {
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.sans_folders_getall.arn}"
@@ -1331,13 +2056,43 @@ resource "aws_lambda_permission" "sans_api_sans_folders_resize_post" {
   source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/POST/folders/{folderid}/resize"
 }
 
-resource "aws_lambda_permission" "sans_api_sans_folders_resize_delete" {
+//albums
+resource "aws_lambda_permission" "sans_api_sans_albums_getall" {
   action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.sans_folders_resize_delete.arn}"
+  function_name = "${aws_lambda_function.sans_albums_getall.arn}"
   principal     = "apigateway.amazonaws.com"
-  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/DELETE/folders/{folderid}/resize"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/GET/albums"
 }
 
+resource "aws_lambda_permission" "sans_api_sans_albums_create" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_albums_create.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/POST/albums"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_albums_get" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_albums_get.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/GET/albums/{albumid}"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_albums_update" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_albums_update.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/PUT/albums/{albumid}"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_albums_delete" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_albums_delete.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/DELETE/albums/{albumid}"
+}
+
+//images
 resource "aws_lambda_permission" "sans_api_sans_images_getall" {
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.sans_images_getall.arn}"
@@ -1374,6 +2129,43 @@ resource "aws_lambda_permission" "sans_api_sans_images_delete" {
   source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/DELETE/folders/{folderid}/images/{imageid}"
 }
 
+//pages
+resource "aws_lambda_permission" "sans_api_sans_pages_getall" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_pages_getall.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/GET/pages"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_pages_create" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_pages_create.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/POST/pages"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_pages_get" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_pages_get.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/GET/pages/{pageid}"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_pages_update" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_pages_update.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/PUT/pages/{pageid}"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_pages_delete" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_pages_delete.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/DELETE/pages/{pageid}"
+}
+
+//cookies
 resource "aws_lambda_permission" "sans_api_sans_cookies_get" {
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.sans_cookies_get.arn}"

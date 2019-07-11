@@ -47,6 +47,54 @@ resource "aws_iam_role_policy" "sans_iam_for_folders" {
 POLICY
 }
 
+resource "aws_iam_role_policy" "sans_iam_for_albums" {
+    name   = "sans_iam_for_albums"
+    role   = "sans_iam_for_lambda"
+    policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:GetItem",
+        "dynamodb:Query",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": "arn:aws:dynamodb:eu-west-2:739465383014:table/sans-albums"
+    }
+  ]
+}
+POLICY
+}
+
+resource "aws_iam_role_policy" "sans_iam_for_pagess" {
+    name   = "sans_iam_for_pagess"
+    role   = "sans_iam_for_lambda"
+    policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:GetItem",
+        "dynamodb:Query",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": "arn:aws:dynamodb:eu-west-2:739465383014:table/sans-pages"
+    }
+  ]
+}
+POLICY
+}
+
 resource "aws_iam_role_policy" "sans_iam_for_images" {
     name   = "sans_iam_for_images"
     role   = "sans_iam_for_lambda"
@@ -119,17 +167,13 @@ resource "aws_s3_bucket_object" "object" {
 }
 */
 
+//Folder lambda
 resource "aws_lambda_function" "sans_folders_create" {
 	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_folders_create"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.create"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-//  source_code_hash = "${filebase64sha256("s3://pipeline.sans-website.com/sans-server.zip")}"
-//	source_code_hash = "${data.aws_s3_bucket_object.lambda_zip_hash.body}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
   runtime = "nodejs10.x"
 
@@ -146,9 +190,6 @@ resource "aws_lambda_function" "sans_folders_get" {
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.get"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs10.x"
@@ -160,9 +201,6 @@ resource "aws_lambda_function" "sans_folders_getall" {
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.getAll"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs10.x"
@@ -174,9 +212,6 @@ resource "aws_lambda_function" "sans_folders_rename" {
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.rename"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs10.x"
@@ -188,59 +223,74 @@ resource "aws_lambda_function" "sans_folders_delete" {
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/folders.delete"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
-resource "aws_lambda_function" "sans_folders_resize_post" {
-	filename      = "./sans-resizer.zip"
-  function_name = "sans_folders_resize_post"
+//Album Lambda
+resource "aws_lambda_function" "sans_albums_getall" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_albums_getall"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
-  handler       = "index.resizeFolder"
+  handler       = "src/albums.getAll"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
-  runtime = "nodejs8.10"
-	memory_size = 1216
-	timeout = 300
-
-	depends_on = [ "data.external.worker_zip" ]
+  runtime = "nodejs10.x"
 }
 
-resource "aws_lambda_function" "sans_folders_resize_delete" {
-	filename      = "./sans-resizer.zip"
-  function_name = "sans_folders_resize_delete"
+resource "aws_lambda_function" "sans_albums_create" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_albums_create"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
-  handler       = "index.resizeFolder"
+  handler       = "src/albums.create"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
-  runtime = "nodejs8.10"
-	memory_size = 1216
-	timeout = 10
-
-	depends_on = [ "data.external.worker_zip" ]
+  runtime = "nodejs10.x"
 }
 
+resource "aws_lambda_function" "sans_albums_get" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_albums_get"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/albums.get"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_albums_update" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_albums_update"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/albums.update"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs8.10"
+}
+
+resource "aws_lambda_function" "sans_albums_delete" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_albums_delete"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/albums.delete"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+//Image Lambda
 resource "aws_lambda_function" "sans_images_getall" {
 	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_images_getall"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.getAll"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs10.x"
@@ -252,9 +302,6 @@ resource "aws_lambda_function" "sans_images_create" {
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.create"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs10.x"
@@ -266,31 +313,20 @@ resource "aws_lambda_function" "sans_images_get" {
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.get"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
-// Hard coded zip file because of problems with terraform zip and symbolic links
 resource "aws_lambda_function" "sans_images_update" {
-	filename      = "./sans-resizer.zip"
+	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_images_update"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
-  handler       = "index.resize"
+  handler       = "src/images.update"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs8.10"
-	memory_size = 1216
-	timeout = 10
-
-	depends_on = [ "data.external.worker_zip" ]
 }
 
 resource "aws_lambda_function" "sans_images_delete" {
@@ -299,42 +335,107 @@ resource "aws_lambda_function" "sans_images_delete" {
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/images.delete"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
+//Pages Lambda
+resource "aws_lambda_function" "sans_pages_getall" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_pages_getall"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/pages.getAll"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_pages_create" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_pages_create"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/pages.create"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_pages_get" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_pages_get"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/pages.get"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_pages_update" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_pages_update"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/pages.update"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_pages_delete" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_pages_delete"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/pages.delete"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+//Get signed cookie lambda 
 resource "aws_lambda_function" "sans_cookies_get" {
 	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_cookies_get"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "src/cookies.get"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
   source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
 
   runtime = "nodejs10.x"
 }
 
+///Lambda to generate image thumbnails for a folder (if required)
+resource "aws_lambda_function" "sans_folders_resize_post" {
+	filename      = "./sans-resizer.zip"
+  function_name = "sans_folders_resize_post"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "index.resizeFolder"
+
+	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
+
+  runtime = "nodejs8.10"
+	memory_size = 1216
+	timeout = 300
+
+	depends_on = [ "data.external.worker_zip" ]
+}
+
+//Thumbnail generator triggered from file creation in private/ folder on private S3 bucket
 resource "aws_lambda_function" "sans_images_resize" {
 	filename      = "./sans-resizer.zip"
   function_name = "sans_images_resize"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "index.resizeImage"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
 	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
 
   runtime = "nodejs8.10"
 	memory_size = 1216
-	timeout = 10
+	timeout = 300
 
 	depends_on = [ "data.external.worker_zip" ]
 }

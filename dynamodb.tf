@@ -24,6 +24,58 @@ resource "aws_dynamodb_table" "sans_website_folders" {
 */
 }
 
+resource "aws_dynamodb_table" "sans_website_albums" {
+  name           = "sans-albums"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 5
+  write_capacity = 5
+  hash_key       = "userId"
+  range_key      = "albumId"
+
+  attribute {
+    name = "albumId"
+    type = "S"
+  }
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
+/*
+  ttl {
+    attribute_name = "TimeToExist"
+    enabled        = false
+  }
+*/
+}
+
+resource "aws_dynamodb_table" "sans_website_pages" {
+  name           = "sans-pages"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 5
+  write_capacity = 5
+  hash_key       = "userId"
+  range_key      = "pageId"
+
+  attribute {
+    name = "pageId"
+    type = "S"
+  }
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
+/*
+  ttl {
+    attribute_name = "TimeToExist"
+    enabled        = false
+  }
+*/
+}
+
 resource "aws_dynamodb_table" "sans_website_images" {
   name           = "sans-images"
   billing_mode   = "PROVISIONED"
@@ -63,3 +115,5 @@ resource "aws_dynamodb_table" "sans_website_images" {
     projection_type    = "ALL"
   }
 }
+
+
