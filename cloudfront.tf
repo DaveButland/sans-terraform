@@ -37,6 +37,13 @@ resource "aws_cloudfront_distribution" "sans_website" {
   default_root_object = "index.html"
   comment             = "sans-website"
 
+	aliases = ["quyen-le-model.com"]
+	viewer_certificate {
+		acm_certificate_arn = "arn:aws:acm:us-east-1:739465383014:certificate/cebad9e0-76d9-4610-b7f3-b8d77bcd945d"
+		minimum_protocol_version = "TLSv1.1_2016" 
+  	ssl_support_method = "sni-only"
+	}
+
 /*
   logging_config {
     include_cookies = false
@@ -72,7 +79,7 @@ resource "aws_cloudfront_distribution" "sans_website" {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${local.s3_private_origin_id}"
-//		trusted_signers = [ "self" ] - temp for testing
+		trusted_signers = [ "self" ] 
 
     forwarded_values {
       query_string = false
@@ -94,7 +101,7 @@ resource "aws_cloudfront_distribution" "sans_website" {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${local.s3_private_origin_id}"
-//		trusted_signers = [ "self" ] - temp for testing
+//		trusted_signers = [ "self" ] 
 
     forwarded_values {
       query_string = false
@@ -135,9 +142,9 @@ resource "aws_cloudfront_distribution" "sans_website" {
 
   price_class = "PriceClass_All"
 
-  viewer_certificate {
-    cloudfront_default_certificate = true
-  }
+//  viewer_certificate {
+//    cloudfront_default_certificate = true
+//  }
 }
 
 data "aws_iam_policy_document" "s3_public_policy" {

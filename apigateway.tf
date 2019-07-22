@@ -2,7 +2,7 @@
 //API GATEWAY
 resource "aws_api_gateway_rest_api" "sans_api" {
   name        = "sans_api"
-  description = "Sans-website apis"
+  description = "api.quyen-le-model.com"
 }
 
 //Need to know what to put here
@@ -21,6 +21,28 @@ resource "aws_api_gateway_authorizer" "sans_api" {
 
 	depends_on = ["aws_cognito_user_pool.sans_website"]
 }
+
+//Need to make the certificate terraformed - how does that work?
+resource "aws_api_gateway_domain_name" "sans_api" {
+	certificate_arn = "arn:aws:acm:us-east-1:739465383014:certificate/cebad9e0-76d9-4610-b7f3-b8d77bcd945d"
+//	certificate_arn = "${aws_acm_certificate_validation.example.certificate_arn}"
+  domain_name     = "api.quyen-le-model.com"
+}
+
+//Manually configured for now - need to get route53 zone terraformed
+/*
+resource "aws_route53_record" "sans-api" {
+  name    = "${aws_api_gateway_domain_name.example.domain_name}"
+  type    = "A"
+  zone_id = "${aws_route53_zone.example.id}"
+
+  alias {
+    evaluate_target_health = true
+    name                   = "${aws_api_gateway_domain_name.example.cloudfront_domain_name}"
+    zone_id                = "${aws_api_gateway_domain_name.example.cloudfront_zone_id}"
+  }
+}
+*/
 
 //API RESOURCES
 //folders
@@ -94,6 +116,14 @@ resource "aws_api_gateway_resource" "sans_api_images_imageid" {
   rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
   parent_id   = "${aws_api_gateway_resource.sans_api_images.id}"
   path_part   = "{imageid}"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_images"]
+}
+
+resource "aws_api_gateway_resource" "sans_api_images_public" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  parent_id   = "${aws_api_gateway_resource.sans_api_images.id}"
+  path_part   = "public"
 
   depends_on = ["aws_api_gateway_resource.sans_api_images"]
 }
@@ -425,6 +455,26 @@ resource "aws_api_gateway_method" "sans_api_images_imageid_delete" {
 	authorization_scopes = ["aws.cognito.signin.user.admin"]
 
   depends_on = ["aws_api_gateway_resource.sans_api_images_imageid"]
+}
+
+resource "aws_api_gateway_method" "sans_api_images_public_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_images_public.id}"
+  http_method   = "OPTIONS"
+
+  authorization = "NONE"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_images_public"]
+}
+
+resource "aws_api_gateway_method" "sans_api_images_public_get" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_images_public.id}"
+  http_method   = "GET"
+
+	authorization = "NONE"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_images_public"]
 }
 
 //pages
@@ -895,6 +945,35 @@ resource "aws_api_gateway_method_response" "sans_api_images_imageid_delete" {
     }
 
     depends_on = ["aws_api_gateway_method.sans_api_images_imageid_delete"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_images_public_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_images_public.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_images_public_options.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }		
+		response_parameters = { 
+			"method.response.header.Access-Control-Allow-Headers" = true 
+			"method.response.header.Access-Control-Allow-Methods" = true 
+			"method.response.header.Access-Control-Allow-Origin" = true 
+		}
+
+    depends_on = ["aws_api_gateway_method.sans_api_images_public_options"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_images_public_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_images_public.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_images_public_get.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_images_public_get"]
 }
 
 //pages
@@ -1385,6 +1464,33 @@ resource "aws_api_gateway_integration" "sans_api_images_imageid_delete" {
   depends_on = ["aws_api_gateway_method.sans_api_images_imageid_delete"]
 }
 
+resource "aws_api_gateway_integration" "sans_api_images_public_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_images_public.id}"
+  http_method   = "${aws_api_gateway_method.sans_api_images_public_options.http_method}"
+  type          = "MOCK"
+	request_templates = {
+    "application/json" = <<EOF
+{"statusCode": 200}
+EOF
+}
+
+  depends_on = ["aws_api_gateway_method.sans_api_images_public_options"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_images_public_get" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_images_public_get.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_images_public_get.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_images_getpublic.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_images_public_get"]
+}
+
 //pages
 resource "aws_api_gateway_integration" "sans_api_pages_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
@@ -1844,17 +1950,29 @@ resource "aws_api_gateway_integration_response" "sans_api_images_imageid_delete"
     depends_on = ["aws_api_gateway_integration.sans_api_images_imageid_delete"]
 }
 
-resource "aws_api_gateway_integration_response" "sans_api_cookies_options" {
+resource "aws_api_gateway_integration_response" "sans_api_images_public_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
-    resource_id   = "${aws_api_gateway_resource.sans_api_cookies.id}"
-    http_method   = "${aws_api_gateway_method.sans_api_cookies_options.http_method}"
-    status_code   = "${aws_api_gateway_method_response.sans_api_cookies_options.status_code}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_images_public.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_images_public_options.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_images_public_options.status_code}"
     response_parameters = {
 			"method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
 			"method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,DELETE'",
 			"method.response.header.Access-Control-Allow-Origin" = "'*'"
     }
-    depends_on = ["aws_api_gateway_integration.sans_api_cookies_options"]
+    depends_on = ["aws_api_gateway_integration.sans_api_images_public_options"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_images_public_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_images_public.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_images_public_get.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_images_public_get.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_images_public_get"]
 }
 
 //pages
@@ -1945,6 +2063,19 @@ resource "aws_api_gateway_integration_response" "sans_api_pages_pageid_delete" {
 }
 
 //cookies
+resource "aws_api_gateway_integration_response" "sans_api_cookies_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_cookies.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_cookies_options.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_cookies_options.status_code}"
+    response_parameters = {
+			"method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+			"method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,DELETE'",
+			"method.response.header.Access-Control-Allow-Origin" = "'*'"
+    }
+    depends_on = ["aws_api_gateway_integration.sans_api_cookies_options"]
+}
+
 resource "aws_api_gateway_integration_response" "sans_api_cookies_get" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
     resource_id   = "${aws_api_gateway_resource.sans_api_cookies.id}"
@@ -1988,6 +2119,8 @@ resource "aws_api_gateway_deployment" "sans_api" {
 	             , "aws_api_gateway_integration.sans_api_images_imageid_get"
 	             , "aws_api_gateway_integration.sans_api_images_imageid_put"
 	             , "aws_api_gateway_integration.sans_api_images_imageid_delete"
+	             , "aws_api_gateway_integration.sans_api_images_public_options"
+	             , "aws_api_gateway_integration.sans_api_images_public_get"
 	             , "aws_api_gateway_integration.sans_api_pages_options"
 	             , "aws_api_gateway_integration.sans_api_pages_get"
 	             , "aws_api_gateway_integration.sans_api_pages_post"
@@ -2098,6 +2231,13 @@ resource "aws_lambda_permission" "sans_api_sans_images_getall" {
   function_name = "${aws_lambda_function.sans_images_getall.arn}"
   principal     = "apigateway.amazonaws.com"
   source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/GET/folders/{folderid}/images"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_images_getpublic" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_images_getpublic.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/GET/images/public"
 }
 
 resource "aws_lambda_permission" "sans_api_sans_images_create" {

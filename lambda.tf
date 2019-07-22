@@ -318,6 +318,17 @@ resource "aws_lambda_function" "sans_images_get" {
   runtime = "nodejs10.x"
 }
 
+resource "aws_lambda_function" "sans_images_getpublic" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_images_getpublic"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/images.getpublic"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
 resource "aws_lambda_function" "sans_images_update" {
 	filename      = "${data.archive_file.sans-server.output_path}"
   function_name = "sans_images_update"

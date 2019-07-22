@@ -1,8 +1,8 @@
 resource "aws_dynamodb_table" "sans_website_folders" {
   name           = "sans-folders"
   billing_mode   = "PROVISIONED"
-  read_capacity  = 5
-  write_capacity = 5
+  read_capacity  = 1
+  write_capacity = 1
   hash_key       = "userId"
   range_key      = "folderId"
 
@@ -27,8 +27,8 @@ resource "aws_dynamodb_table" "sans_website_folders" {
 resource "aws_dynamodb_table" "sans_website_albums" {
   name           = "sans-albums"
   billing_mode   = "PROVISIONED"
-  read_capacity  = 5
-  write_capacity = 5
+  read_capacity  = 1
+  write_capacity = 1
   hash_key       = "userId"
   range_key      = "albumId"
 
@@ -53,8 +53,8 @@ resource "aws_dynamodb_table" "sans_website_albums" {
 resource "aws_dynamodb_table" "sans_website_pages" {
   name           = "sans-pages"
   billing_mode   = "PROVISIONED"
-  read_capacity  = 5
-  write_capacity = 5
+  read_capacity  = 1
+  write_capacity = 1
   hash_key       = "userId"
   range_key      = "pageId"
 
@@ -79,8 +79,8 @@ resource "aws_dynamodb_table" "sans_website_pages" {
 resource "aws_dynamodb_table" "sans_website_images" {
   name           = "sans-images"
   billing_mode   = "PROVISIONED"
-  read_capacity  = 5
-  write_capacity = 5
+  read_capacity  = 1
+  write_capacity = 1
   hash_key       = "userId"
   range_key      = "imageId"
 
@@ -110,8 +110,8 @@ resource "aws_dynamodb_table" "sans_website_images" {
     name               = "userid-folderid-index"
     hash_key           = "userId"
     range_key          = "folderId"
-    write_capacity     = 5
-    read_capacity      = 5
+    write_capacity     = 1
+    read_capacity      = 1
     projection_type    = "ALL"
   }
 }
