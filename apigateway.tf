@@ -2133,6 +2133,13 @@ resource "aws_api_gateway_deployment" "sans_api" {
 							 ]
 }
 
+resource "aws_api_gateway_base_path_mapping" "sans_api" {
+  api_id      = "${aws_api_gateway_rest_api.sans_api.id}"
+  stage_name  = "${aws_api_gateway_deployment.sans_api.stage_name}"
+  domain_name = "${aws_api_gateway_domain_name.sans_api.domain_name}"
+	base_path = "v1" 
+}
+
 /*
 resource "aws_api_gateway_stage" "sans_api" {
   stage_name    = "live"
