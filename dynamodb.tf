@@ -121,16 +121,16 @@ resource "aws_dynamodb_table" "sans_website_events" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
   write_capacity = 1
-  hash_key       = "userId"
-  range_key      = "startDate"
+  hash_key       = "user"
+  range_key      = "start"
 
   attribute {
-    name = "userId"
+    name = "user"
     type = "S"
   }
 
   attribute {
-    name = "startDate"
+    name = "start"
     type = "S"
 	}
 }
@@ -140,11 +140,11 @@ resource "aws_dynamodb_table" "sans_website_messages" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
   write_capacity = 1
-  hash_key       = "userId"
+  hash_key       = "user"
   range_key      = "date"
 
   attribute {
-    name = "userId"
+    name = "user"
     type = "S"
   }
 
