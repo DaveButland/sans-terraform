@@ -116,4 +116,43 @@ resource "aws_dynamodb_table" "sans_website_images" {
   }
 }
 
+resource "aws_dynamodb_table" "sans_website_events" {
+  name           = "sans-events"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "userId"
+  range_key      = "startDate"
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
+  attribute {
+    name = "startDate"
+    type = "S"
+	}
+}
+
+resource "aws_dynamodb_table" "sans_website_messages" {
+  name           = "sans-messages"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "userId"
+  range_key      = "date"
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
+  attribute {
+    name = "date"
+    type = "S"
+	}
+}
+
+
 

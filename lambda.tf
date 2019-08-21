@@ -120,6 +120,54 @@ resource "aws_iam_role_policy" "sans_iam_for_images" {
 POLICY
 }
 
+resource "aws_iam_role_policy" "sans_iam_for_events" {
+    name   = "sans_iam_for_events"
+    role   = "sans_iam_for_lambda"
+    policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:GetItem",
+        "dynamodb:Query",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": "arn:aws:dynamodb:eu-west-2:739465383014:table/sans-events"
+    }
+  ]
+}
+POLICY
+}
+
+resource "aws_iam_role_policy" "sans_iam_for_messages" {
+    name   = "sans_iam_for_messages"
+    role   = "sans_iam_for_lambda"
+    policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:GetItem",
+        "dynamodb:Query",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": "arn:aws:dynamodb:eu-west-2:739465383014:table/sans-messages"
+    }
+  ]
+}
+POLICY
+}
+
 data "archive_file" "sans-server" {
   type        = "zip"
   source_dir = "../sans-server"
@@ -407,6 +455,116 @@ resource "aws_lambda_function" "sans_pages_delete" {
   runtime = "nodejs10.x"
 }
 
+resource "aws_lambda_function" "sans_events_getall" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_events_getall"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/events.getAll"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_events_create" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_events_create"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/events.create"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_events_get" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_events_get"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/events.get"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_events_update" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_events_update"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/events.update"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_events_delete" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_events_delete"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/events.delete"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_messages_getall" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_messages_getall"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/messages.getAll"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_messages_create" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_messages_create"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/messages.create"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_messages_get" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_messages_get"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/messages.get"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_messages_update" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_messages_update"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/messages.update"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
+resource "aws_lambda_function" "sans_messages_delete" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_messages_delete"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/messages.delete"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
 //Get signed cookie lambda 
 resource "aws_lambda_function" "sans_cookies_get" {
 	filename      = "${data.archive_file.sans-server.output_path}"
@@ -441,6 +599,21 @@ resource "aws_lambda_function" "sans_images_resize" {
   function_name = "sans_images_resize"
   role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
   handler       = "index.resizeImage"
+
+	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
+
+  runtime = "nodejs8.10"
+	memory_size = 1216
+	timeout = 300
+
+	depends_on = [ "data.external.worker_zip" ]
+}
+
+resource "aws_lambda_function" "sans_images_resize_all" {
+	filename      = "./sans-resizer.zip"
+  function_name = "sans_images_resize_all"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "index.createFolderThumbnailsTrigger"
 
 	source_code_hash = "${filebase64sha256("./sans-resizer.zip")}"
 
