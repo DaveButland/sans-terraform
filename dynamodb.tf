@@ -122,7 +122,7 @@ resource "aws_dynamodb_table" "sans_website_events" {
   read_capacity  = 1
   write_capacity = 1
   hash_key       = "user"
-  range_key      = "start"
+  range_key      = "id"
 
   attribute {
     name = "user"
@@ -130,7 +130,7 @@ resource "aws_dynamodb_table" "sans_website_events" {
   }
 
   attribute {
-    name = "start"
+    name = "id"
     type = "S"
 	}
 }
@@ -141,7 +141,7 @@ resource "aws_dynamodb_table" "sans_website_messages" {
   read_capacity  = 1
   write_capacity = 1
   hash_key       = "user"
-  range_key      = "date"
+  range_key      = "id"
 
   attribute {
     name = "user"
@@ -149,7 +149,7 @@ resource "aws_dynamodb_table" "sans_website_messages" {
   }
 
   attribute {
-    name = "date"
+    name = "id"
     type = "S"
 	}
 }
