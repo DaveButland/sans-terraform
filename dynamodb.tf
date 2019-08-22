@@ -29,16 +29,16 @@ resource "aws_dynamodb_table" "sans_website_albums" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
   write_capacity = 1
-  hash_key       = "userId"
-  range_key      = "albumId"
+  hash_key       = "userid"
+  range_key      = "albumid"
 
   attribute {
-    name = "albumId"
+    name = "userid"
     type = "S"
   }
 
   attribute {
-    name = "userId"
+    name = "albumid"
     type = "S"
   }
 
@@ -121,16 +121,16 @@ resource "aws_dynamodb_table" "sans_website_events" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
   write_capacity = 1
-  hash_key       = "user"
-  range_key      = "id"
+  hash_key       = "userid"
+  range_key      = "eventid"
 
   attribute {
-    name = "user"
+    name = "userid"
     type = "S"
   }
 
   attribute {
-    name = "id"
+    name = "eventid"
     type = "S"
 	}
 }
@@ -140,16 +140,16 @@ resource "aws_dynamodb_table" "sans_website_messages" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
   write_capacity = 1
-  hash_key       = "user"
-  range_key      = "id"
+  hash_key       = "userid"
+  range_key      = "messageid"
 
   attribute {
-    name = "user"
+    name = "userid"
     type = "S"
   }
 
   attribute {
-    name = "id"
+    name = "messageid"
     type = "S"
 	}
 }

@@ -423,10 +423,10 @@ resource "aws_api_gateway_method" "sans_api_events_get" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_events.id}"
   http_method   = "GET"
-	
-  authorization = "COGNITO_USER_POOLS"
-  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
-	authorization_scopes = ["aws.cognito.signin.user.admin"]
+ 	authorization = "NONE"	
+//  authorization = "COGNITO_USER_POOLS"
+//  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+//	authorization_scopes = ["aws.cognito.signin.user.admin"]
 
   depends_on = ["aws_api_gateway_resource.sans_api_events"]
 }
@@ -515,10 +515,10 @@ resource "aws_api_gateway_method" "sans_api_messages_post" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_messages.id}"
   http_method   = "POST"
-
-  authorization = "COGNITO_USER_POOLS"
-  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
-	authorization_scopes = ["aws.cognito.signin.user.admin"]
+ 	authorization = "NONE"
+//  authorization = "COGNITO_USER_POOLS"
+//  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+//	authorization_scopes = ["aws.cognito.signin.user.admin"]
 
   depends_on = ["aws_api_gateway_resource.sans_api_messages"]
 }
