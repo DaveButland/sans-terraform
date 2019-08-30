@@ -154,5 +154,36 @@ resource "aws_dynamodb_table" "sans_website_messages" {
 	}
 }
 
+resource "aws_dynamodb_table" "sans_website_users" {
+  name           = "sans-users"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "userid"
+  
+  attribute {
+    name = "userid"
+    type = "S"
+  }
+}
+
+resource "aws_dynamodb_table" "sans_website_references" {
+  name           = "sans-references"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "userid"
+	range_key      = "referenceid"
+  
+  attribute {
+    name = "userid"
+    type = "S"
+  }
+
+	attribute {
+		name = "referenceid"
+		type = "S"
+	}
+}
 
 

@@ -343,10 +343,7 @@ resource "aws_api_gateway_method" "sans_api_albums_get" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_albums.id}"
   http_method   = "GET"
-	
-  authorization = "COGNITO_USER_POOLS"
-  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
-	authorization_scopes = ["aws.cognito.signin.user.admin"]
+  authorization = "NONE"
 
   depends_on = ["aws_api_gateway_resource.sans_api_albums"]
 }
@@ -617,10 +614,7 @@ resource "aws_api_gateway_method" "sans_api_images_imageid_get" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
   resource_id   = "${aws_api_gateway_resource.sans_api_images_imageid.id}"
   http_method   = "GET"
-
-  authorization = "COGNITO_USER_POOLS"
-  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
-	authorization_scopes = ["aws.cognito.signin.user.admin"]
+  authorization = "NONE"
 
   depends_on = ["aws_api_gateway_resource.sans_api_images_imageid"]
 }
