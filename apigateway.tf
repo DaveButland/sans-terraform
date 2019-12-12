@@ -103,6 +103,14 @@ resource "aws_api_gateway_resource" "sans_api_albums_albumid" {
   depends_on = ["aws_api_gateway_resource.sans_api_albums"]
 }
 
+resource "aws_api_gateway_resource" "sans_api_albums_albumid_images" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  parent_id   = "${aws_api_gateway_resource.sans_api_albums_albumid.id}"
+  path_part   = "images"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums_albumid"]
+}
+
 resource "aws_api_gateway_resource" "sans_api_messages" {
   rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
   parent_id   = "${aws_api_gateway_rest_api.sans_api.root_resource_id}"
@@ -404,6 +412,29 @@ resource "aws_api_gateway_method" "sans_api_albums_albumid_delete" {
 	authorization_scopes = ["aws.cognito.signin.user.admin"]
 
   depends_on = ["aws_api_gateway_resource.sans_api_albums_albumid"]
+}
+
+resource "aws_api_gateway_method" "sans_api_albums_albumid_images_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid_images.id}"
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums_albumid_images"]
+}
+
+resource "aws_api_gateway_method" "sans_api_albums_albumid_images_get" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid_images.id}"
+  http_method   = "GET"
+	authorization = "NONE"
+
+// public for now
+//  authorization = "COGNITO_USER_POOLS"
+//  authorizer_id = "${aws_api_gateway_authorizer.sans_api.id}"
+//	authorization_scopes = ["aws.cognito.signin.user.admin"]
+
+  depends_on = ["aws_api_gateway_resource.sans_api_albums_albumid_images"]
 }
 
 //events
@@ -1037,6 +1068,36 @@ resource "aws_api_gateway_method_response" "sans_api_albums_albumid_delete" {
     }
 
     depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_delete"]
+}
+
+resource "aws_api_gateway_method_response" "sans_api_albums_albumid_images_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid_images.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_images_options.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }		
+		response_parameters = { 
+			"method.response.header.Access-Control-Allow-Headers" = true 
+			"method.response.header.Access-Control-Allow-Methods" = true 
+			"method.response.header.Access-Control-Allow-Origin" = true 
+		}
+
+    depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_images_options"]
+}
+
+
+resource "aws_api_gateway_method_response" "sans_api_albums_albumid_images_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid_images.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_images_get.http_method}"
+    status_code   = 200
+		response_models = {
+			"application/json" = "Empty"
+    }
+
+    depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_images_get"]
 }
 
 //events
@@ -1746,6 +1807,34 @@ resource "aws_api_gateway_integration" "sans_api_albums_albumid_delete" {
   depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_delete"]
 }
 
+resource "aws_api_gateway_integration" "sans_api_albums_albumid_images_options" {
+  rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid_images.id}"
+  http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_images_options.http_method}"
+  type          = "MOCK"
+	request_templates = {
+    "application/json" = <<EOF
+{"statusCode": 200}
+EOF
+}
+
+  depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_images_options"]
+}
+
+resource "aws_api_gateway_integration" "sans_api_albums_albumid_images_get" {
+  rest_api_id = "${aws_api_gateway_rest_api.sans_api.id}"
+  resource_id = "${aws_api_gateway_method.sans_api_albums_albumid_images_get.resource_id}"
+  http_method = "${aws_api_gateway_method.sans_api_albums_albumid_images_get.http_method}"
+
+	content_handling        = "CONVERT_TO_TEXT"
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "${aws_lambda_function.sans_albums_images_get.invoke_arn}"
+
+  depends_on = ["aws_api_gateway_method.sans_api_albums_albumid_images_get"]
+}
+
+
 //events
 resource "aws_api_gateway_integration" "sans_api_events_options" {
   rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
@@ -2427,6 +2516,31 @@ resource "aws_api_gateway_integration_response" "sans_api_albums_albumid_delete"
     depends_on = ["aws_api_gateway_integration.sans_api_albums_albumid_delete"]
 }
 
+resource "aws_api_gateway_integration_response" "sans_api_albums_albumid_images_options" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid_images.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_images_options.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_albums_albumid_images_options.status_code}"
+    response_parameters = {
+			"method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+			"method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,DELETE'",
+			"method.response.header.Access-Control-Allow-Origin" = "'*'"
+    }
+    depends_on = ["aws_api_gateway_integration.sans_api_albums_albumid_images_options"]
+}
+
+resource "aws_api_gateway_integration_response" "sans_api_albums_albumid_images_get" {
+    rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
+    resource_id   = "${aws_api_gateway_resource.sans_api_albums_albumid_images.id}"
+    http_method   = "${aws_api_gateway_method.sans_api_albums_albumid_images_get.http_method}"
+    status_code   = "${aws_api_gateway_method_response.sans_api_albums_albumid_images_get.status_code}"
+		response_templates = { 
+			"application/json" = "null"
+    }		
+
+    depends_on = ["aws_api_gateway_integration.sans_api_albums_albumid_images_get"]
+}
+
 //events
 resource "aws_api_gateway_integration_response" "sans_api_events_options" {
     rest_api_id   = "${aws_api_gateway_rest_api.sans_api.id}"
@@ -2850,6 +2964,8 @@ resource "aws_api_gateway_deployment" "sans_api" {
 	             , "aws_api_gateway_integration.sans_api_albums_albumid_get"
 	             , "aws_api_gateway_integration.sans_api_albums_albumid_put"
 	             , "aws_api_gateway_integration.sans_api_albums_albumid_delete"
+	             , "aws_api_gateway_integration.sans_api_albums_albumid_images_options"
+	             , "aws_api_gateway_integration.sans_api_albums_albumid_images_get"
 	             , "aws_api_gateway_integration.sans_api_events_options"
 	             , "aws_api_gateway_integration.sans_api_events_get"
 	             , "aws_api_gateway_integration.sans_api_events_post"
@@ -2982,6 +3098,13 @@ resource "aws_lambda_permission" "sans_api_sans_albums_delete" {
   function_name = "${aws_lambda_function.sans_albums_delete.arn}"
   principal     = "apigateway.amazonaws.com"
   source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/DELETE/albums/{albumid}"
+}
+
+resource "aws_lambda_permission" "sans_api_sans_albums_images_get" {
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.sans_albums_images_get.arn}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sans_api.execution_arn}/*/GET/albums/{albumid}/images"
 }
 
 //events

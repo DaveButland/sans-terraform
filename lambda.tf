@@ -332,6 +332,17 @@ resource "aws_lambda_function" "sans_albums_delete" {
   runtime = "nodejs10.x"
 }
 
+resource "aws_lambda_function" "sans_albums_images_get" {
+	filename      = "${data.archive_file.sans-server.output_path}"
+  function_name = "sans_albums_images_get"
+  role          = "${aws_iam_role.sans_iam_for_lambda.arn}"
+  handler       = "src/albums.getImagesHandler"
+
+  source_code_hash = "${data.archive_file.sans-server.output_base64sha256}"
+
+  runtime = "nodejs10.x"
+}
+
 //Image Lambda
 resource "aws_lambda_function" "sans_images_getall" {
 	filename      = "${data.archive_file.sans-server.output_path}"
